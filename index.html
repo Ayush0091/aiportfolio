@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ayush Sharma — AI Filmmaker, Director & AI Artist</title>
+<meta name="description" content="Ayush Sharma — AI Filmmaker, Director and AI Artist. Cinematic AI films, brand spots and micro-dramas built with an end-to-end generative pipeline.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%2305070d%27/%3E%3Ccircle cx=%2732%27 cy=%2732%27 r=%2718%27 fill=%27none%27 stroke=%27%237aa2ff%27 stroke-width=%274%27/%3E%3Ccircle cx=%2732%27 cy=%2732%27 r=%276%27 fill=%27%23b58cff%27/%3E%3C/svg%3E">
+<meta property="og:title" content="Ayush Sharma — AI Filmmaker, Director & AI Artist">
+<meta property="og:description" content="Cinematic AI films, brand spots and micro-dramas — directed shot by shot.">
+<meta name="theme-color" content="#05070d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#05070d; --ink2:#080b15; --ink3:#0e1220; --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.18);
+  --paper:#d7deeb; --mute:#8a93a6; --dim:#566078;
+  --tung:#7aa2ff; --tung2:#b58cff; --rec:#ff4d6a; --teal:#9fe3ff; --grad:linear-gradient(100deg,#7aa2ff,#b58cff);
+  --serif:'Archivo','Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace; --sans:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background:var(--ink)}
+body{background:var(--ink);color:var(--paper);font-family:var(--sans);font-weight:400;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+::selection{background:var(--tung);color:#000}
+
+/* film grain + vignette */
+.grain{pointer-events:none;position:fixed;inset:-50%;z-index:90;opacity:.07;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 1s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+.vignette{pointer-events:none;position:fixed;inset:0;z-index:89;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* film leader preloader */
+#leader{position:fixed;inset:0;z-index:200;background:#0a0e1a;display:grid;place-items:center;transition:opacity .6s ease, visibility .6s}
+#leader.done{opacity:0;visibility:hidden}
+.leader-ring{position:relative;width:min(46vw,260px);aspect-ratio:1;border-radius:50%;border:2px solid #ddd3}
+.leader-ring::before,.leader-ring::after{content:"";position:absolute;background:#ddd3}
+.leader-ring::before{left:50%;top:-30%;bottom:-30%;width:1px}
+.leader-ring::after{top:50%;left:-30%;right:-30%;height:1px}
+.leader-sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(rgba(122,162,255,.35) var(--a,0deg),transparent 0)}
+.leader-num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--serif);font-size:min(30vw,170px);line-height:1;color:var(--paper)}
+.leader-skip{position:absolute;bottom:28px;right:28px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--mute)}
+
+/* nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px clamp(18px,4vw,48px);mix-blend-mode:difference}
+.brand{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.brand .dot{width:8px;height:8px;border-radius:50%;background:var(--rec);box-shadow:0 0 10px var(--rec);animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.15}}
+.navlinks{display:flex;gap:clamp(14px,2.4vw,34px);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+.navlinks a{opacity:.75;transition:opacity .2s}
+.navlinks a:hover{opacity:1}
+.navlinks a span{color:var(--tung);margin-right:6px}
+@media(max-width:760px){.navlinks a:not(.keep){display:none}}
+
+/* HERO */
+.hero{position:relative;height:100svh;min-height:620px;overflow:hidden;display:flex;align-items:flex-end}
+.hero-bg{position:absolute;inset:0;background:
+  radial-gradient(60% 50% at 78% 30%,rgba(90,120,255,.32),transparent 60%),
+  radial-gradient(40% 40% at 15% 80%,rgba(181,140,255,.16),transparent 60%),
+  radial-gradient(90% 70% at 50% 120%,rgba(150,100,255,.18),transparent 60%),
+  linear-gradient(180deg,#070a14,#060606)}
+.hero-bg::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px)}
+.leak{position:absolute;width:70vmax;height:70vmax;border-radius:50%;filter:blur(80px);opacity:.5;mix-blend-mode:screen;animation:drift 18s ease-in-out infinite alternate}
+.leak.a{background:radial-gradient(circle,#2f4dff,transparent 60%);top:-30vmax;right:-20vmax}
+.leak.b{background:radial-gradient(circle,#9b5cff,transparent 60%);bottom:-40vmax;left:-25vmax;opacity:.22;animation-duration:24s}
+@keyframes drift{to{transform:translate(-8vmax,6vmax) scale(1.1)}}
+.flare{position:absolute;left:-10%;right:-10%;top:38%;height:2px;background:linear-gradient(90deg,transparent,rgba(120,200,255,.0) 20%,rgba(150,215,255,.75) 50%,rgba(120,200,255,0) 80%,transparent);filter:blur(1px);box-shadow:0 0 30px 6px rgba(120,200,255,.25);animation:flare 7s ease-in-out infinite}
+@keyframes flare{0%,100%{opacity:.25;transform:translateX(-6%)}50%{opacity:.85;transform:translateX(6%)}}
+.letterbox{position:absolute;left:0;right:0;height:7vh;background:#000;z-index:3}
+.letterbox.t{top:0}.letterbox.b{bottom:0}
+
+/* viewfinder HUD */
+.vf{position:absolute;inset:calc(7vh + 18px) clamp(18px,4vw,48px);z-index:4;pointer-events:none;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:rgba(215,222,235,.78);text-transform:uppercase}
+.vf i{position:absolute;width:34px;height:34px;border-color:rgba(215,222,235,.6);border-style:solid}
+.vf i:nth-of-type(1){top:0;left:0;border-width:1.5px 0 0 1.5px}
+.vf i:nth-of-type(2){top:0;right:0;border-width:1.5px 1.5px 0 0}
+.vf i:nth-of-type(3){bottom:0;left:0;border-width:0 0 1.5px 1.5px}
+.vf i:nth-of-type(4){bottom:0;right:0;border-width:0 1.5px 1.5px 0}
+.vf .hl1{position:absolute;top:14px;left:48px;display:flex;gap:10px;align-items:center}
+.vf .hl1 b{width:9px;height:9px;border-radius:50%;background:var(--rec);animation:blink 1s infinite}
+.vf .hr1{position:absolute;top:14px;right:48px;text-align:right}
+.vf .hl2{position:absolute;bottom:14px;left:48px}
+.vf .hr2{position:absolute;bottom:14px;right:48px;text-align:right}
+.vf .cross{position:absolute;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%)}
+.vf .cross::before,.vf .cross::after{content:"";position:absolute;background:rgba(215,222,235,.5)}
+.vf .cross::before{left:50%;top:0;bottom:0;width:1px}.vf .cross::after{top:50%;left:0;right:0;height:1px}
+.thirds{position:absolute;inset:0;background:
+ linear-gradient(90deg,transparent calc(33.33% - .5px),rgba(255,255,255,.06) 0 calc(33.33% + .5px),transparent 0 calc(66.66% - .5px),rgba(255,255,255,.06) 0 calc(66.66% + .5px),transparent 0),
+ linear-gradient(0deg,transparent calc(33.33% - .5px),rgba(255,255,255,.06) 0 calc(33.33% + .5px),transparent 0 calc(66.66% - .5px),rgba(255,255,255,.06) 0 calc(66.66% + .5px),transparent 0)}
+.meter{display:inline-flex;gap:2px;vertical-align:middle;margin-left:8px}
+.meter s{display:block;width:3px;height:10px;background:var(--teal);opacity:.3;text-decoration:none}
+.meter s.on{opacity:1}
+
+.hero-inner{position:relative;z-index:5;width:100%;padding:0 clamp(24px,6vw,96px) calc(7vh + 110px)}
+@media(max-width:760px){.vf .hl2,.vf .hr2,.vf .cross{display:none}.hero-inner{padding-bottom:calc(7vh + 50px)}.vf .hr1{font-size:9px}}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--tung);margin-bottom:18px;display:flex;gap:14px;align-items:center}
+.kicker::before{content:"";width:40px;height:1px;background:var(--tung)}
+h1.title{font-family:var(--serif);font-weight:400;font-size:clamp(64px,13vw,210px);line-height:.86;letter-spacing:-.02em}
+h1.title em{font-style:italic;color:transparent;-webkit-text-stroke:1px rgba(215,222,235,.85)}
+.roles{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px 28px;font-family:var(--mono);font-size:clamp(11px,1.1vw,13px);letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
+.roles b{color:var(--paper);font-weight:500}
+.hero-row{margin-top:34px;display:flex;flex-wrap:wrap;gap:28px;align-items:flex-end;justify-content:space-between}
+.hero-row p{max-width:520px;font-size:clamp(15px,1.3vw,18px);color:#c3cbdb;font-weight:300}
+.ctas{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:12px;padding:15px 24px;border:1px solid var(--line2);font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;transition:all .25s;background:rgba(0,0,0,.25);backdrop-filter:blur(6px)}
+.btn:hover{border-color:var(--tung);color:var(--tung)}
+.btn.solid{background:var(--grad);color:#060a18;border-color:transparent}
+.btn.solid:hover{background:#a9c2ff;color:#060a18}
+.btn .play{width:0;height:0;border-left:8px solid currentColor;border-top:5px solid transparent;border-bottom:5px solid transparent}
+
+/* marquee */
+.marquee{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:var(--ink2);position:relative}
+.marquee::before,.marquee::after{content:"";position:absolute;top:0;bottom:0;width:80px;z-index:2}
+.marquee::before{left:0;background:linear-gradient(90deg,var(--ink2),transparent)}
+.marquee::after{right:0;background:linear-gradient(-90deg,var(--ink2),transparent)}
+.track{display:flex;width:max-content;animation:scroll 38s linear infinite}
+.track span{padding:20px 34px;font-family:var(--serif);font-size:clamp(22px,2.6vw,34px);white-space:nowrap;color:#c9d2e3;display:flex;align-items:center;gap:34px}
+.track span::after{content:"✦";font-size:14px;color:var(--tung)}
+@keyframes scroll{to{transform:translateX(-50%)}}
+
+/* sections */
+section{position:relative}
+.wrap{max-width:1360px;margin:0 auto;padding:0 clamp(20px,5vw,64px)}
+.scene{padding:clamp(90px,12vw,160px) 0}
+.slate{display:flex;align-items:center;gap:18px;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute);margin-bottom:28px}
+.slate .chip{border:1px solid var(--line2);padding:6px 10px;color:var(--paper)}
+.slate .chip b{color:var(--tung);font-weight:500}
+.slate .rule{flex:1;height:1px;background:var(--line)}
+h2{font-family:var(--serif);font-weight:400;font-size:clamp(44px,7vw,108px);line-height:.92;letter-spacing:-.015em}
+h2 em{font-style:italic;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{max-width:620px;color:#a9b2c4;font-size:clamp(15px,1.25vw,18px);font-weight:300;margin-top:22px}
+
+/* WORK */
+.work-grid{margin-top:64px;display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
+.card{display:block;position:relative;overflow:hidden;border:1px solid var(--line);background:#0a0d18;cursor:pointer;isolation:isolate;transition:border-color .3s}
+.card:hover{border-color:rgba(122,162,255,.55)}
+.card.feature{grid-column:span 12;aspect-ratio:21/9}
+.card.reel{grid-column:span 3;aspect-ratio:9/16}
+.card.film{grid-column:span 6;aspect-ratio:16/9}
+.grid-label{grid-column:span 12;margin-top:36px;display:flex;align-items:center;gap:16px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
+.grid-label b{color:var(--tung);font-weight:500}.grid-label i{flex:1;height:1px;background:var(--line)}
+@media(max-width:1000px){.card.reel{grid-column:span 6}.card.feature{aspect-ratio:16/9}}
+@media(max-width:560px){.card.reel{grid-column:span 12;aspect-ratio:4/5}.card.film{grid-column:span 12}}
+.poster{position:absolute;inset:0;transition:transform 1.2s cubic-bezier(.2,.7,.2,1);z-index:-1}
+.card:hover .poster{transform:scale(1.06)}
+.poster.p0{background:radial-gradient(50% 70% at 70% 40%,rgba(110,140,255,.55),transparent 60%),radial-gradient(40% 60% at 20% 70%,rgba(181,140,255,.3),transparent 60%),linear-gradient(120deg,#0a0f24,#04060c)}
+.poster.p1{background:radial-gradient(70% 50% at 50% 30%,rgba(122,162,255,.5),transparent 60%),linear-gradient(180deg,#0c1430,#04060c)}
+.poster.p2{background:radial-gradient(70% 50% at 40% 35%,rgba(159,227,255,.42),transparent 60%),linear-gradient(180deg,#071524,#03060a)}
+.poster.p3{background:radial-gradient(60% 50% at 60% 40%,rgba(181,140,255,.48),transparent 60%),linear-gradient(180deg,#160c2a,#05030b)}
+.poster.p4{background:radial-gradient(60% 50% at 50% 45%,rgba(140,120,255,.45),transparent 60%),linear-gradient(180deg,#0d0b24,#040309)}
+.poster.p5{background:radial-gradient(60% 60% at 30% 40%,rgba(122,162,255,.4),transparent 60%),radial-gradient(40% 50% at 80% 70%,rgba(255,77,106,.18),transparent 60%),linear-gradient(160deg,#0a0e1f,#040509)}
+.poster video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;z-index:1}
+.card.previewing .poster video{opacity:1}
+.card.previewing .playbtn{opacity:.55}
+.poster .scan{position:absolute;inset:0;z-index:2;opacity:0;background:linear-gradient(180deg,transparent 0 45%,rgba(159,227,255,.16) 50%,transparent 55% 100%);background-size:100% 220%;transition:opacity .3s}
+.card:hover .poster .scan{opacity:1;animation:scan 1.6s linear infinite}
+@keyframes scan{from{background-position:0 -120%}to{background-position:0 120%}}
+.poster::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 30%,rgba(0,0,0,.85))}
+.poster .sil{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:46%;aspect-ratio:1/1.35;background:radial-gradient(circle at 50% 24%,#000 19%,transparent 19.5%),radial-gradient(ellipse 50% 60% at 50% 100%,#000 98%,transparent 100%);opacity:.85}
+.card.feature .poster .sil{width:20%;left:72%}
+.card.feature .playbtn{top:40%}
+.card.film .poster .sil{width:17%;left:74%}
+.card-body{padding-bottom:58px!important}
+.card-hud{position:absolute;inset:14px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(215,222,235,.7);display:flex;justify-content:space-between;align-items:flex-start}
+.card-hud .r{display:flex;align-items:center;gap:6px}
+.card-hud .r::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--rec)}
+.card-body{position:absolute;left:0;right:0;bottom:0;padding:22px}
+.card-body .tag{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--tung)}
+.card-body h3{font-family:var(--serif);font-weight:400;font-size:clamp(24px,2.3vw,34px);line-height:1.02;margin-top:8px}
+.card.feature .card-body{padding:clamp(22px,4vw,48px)}
+.card.feature .card-body h3{font-size:clamp(34px,5vw,74px);max-width:780px}
+.card-body p{font-size:13px;color:#a9b2c4;margin-top:10px;max-width:520px}
+.playbtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.9);width:74px;height:74px;border-radius:50%;border:1px solid rgba(255,255,255,.5);display:grid;place-items:center;backdrop-filter:blur(6px);background:rgba(0,0,0,.25);opacity:.85;transition:all .35s}
+.playbtn::after{content:"";margin-left:5px;border-left:16px solid #fff;border-top:10px solid transparent;border-bottom:10px solid transparent}
+.card:hover .playbtn{transform:translate(-50%,-50%) scale(1);background:var(--tung);border-color:var(--tung);opacity:1}
+.card:hover .playbtn::after{border-left-color:#060a18}
+.card .ext{z-index:2;position:absolute;right:14px;bottom:14px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:6px 9px;border:1px solid var(--line2);background:rgba(0,0,0,.4);opacity:0;transition:opacity .3s}
+.card .ext{opacity:.85}.card:hover .ext{opacity:1;border-color:var(--tung);color:var(--tung)}
+.work-foot{margin-top:28px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+.work-foot a{color:var(--paper);border-bottom:1px solid var(--tung)}
+
+/* modal player */
+#player{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:70px 18px 30px;backdrop-filter:blur(10px)}
+#player.open{display:flex}
+.pl-frame{position:relative;width:min(1200px,100%);aspect-ratio:16/9;max-height:80vh;background:#000;border:1px solid var(--line2)}
+.pl-frame.vert{width:auto;height:min(80vh,820px);aspect-ratio:9/16;max-width:100%}
+.pl-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.pl-fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--mute);z-index:-1}
+.pl-top{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:18px clamp(18px,4vw,48px);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+.pl-top .t{color:var(--tung)}
+.pl-top .acts{display:flex;gap:10px}
+.pl-top a,.pl-top button{border:1px solid var(--line2);padding:9px 13px}
+.pl-top a:hover,.pl-top button:hover{border-color:var(--tung);color:var(--tung)}
+
+/* CRAFT */
+.craft-grid{margin-top:64px;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
+@media(max-width:1000px){.craft-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.craft-grid{grid-template-columns:1fr}}
+.craft{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:30px 26px 34px;position:relative;min-height:290px;transition:background .35s;overflow:hidden}
+.craft:hover{background:linear-gradient(180deg,rgba(122,162,255,.07),transparent)}
+.craft .no{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.2em}
+.craft svg{display:block;width:58px;height:58px;margin:26px 0 22px;stroke:var(--tung);fill:none;stroke-width:1.3}
+.craft h4{font-family:var(--serif);font-weight:400;font-size:30px;line-height:1.05}
+.craft p{font-size:14px;color:#97a0b3;margin-top:10px}
+.craft .terms{margin-top:16px;display:flex;flex-wrap:wrap;gap:6px}
+.craft .terms span{font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:4px 8px;border:1px solid var(--line);color:#c3cbdb}
+
+/* SHOT BUILDER */
+.builder{margin-top:90px;display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(24px,4vw,56px);align-items:start}
+@media(max-width:1000px){.builder{grid-template-columns:1fr}}
+.monitor{position:relative;aspect-ratio:2.39/1;background:#000;border:1px solid var(--line2);overflow:hidden}
+.monitor-stage{position:absolute;inset:0;transition:background 1s}
+.monitor-subj{position:absolute;left:58%;top:24%;transform-origin:50% 14%;transition:transform .9s cubic-bezier(.2,.7,.2,1),filter .9s;width:12%;aspect-ratio:1/1.35}
+.monitor-subj .head{position:absolute;left:50%;top:0;width:38%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%}
+.monitor-subj .body{position:absolute;left:0;right:0;bottom:0;top:34%;border-radius:50% 50% 0 0/40% 40% 0 0}
+.monitor-subj .head,.monitor-subj .body{background:linear-gradient(100deg,var(--key,rgba(255,170,80,.45)),var(--subj,#111) 55%);transition:background 1s;box-shadow:inset -2px 0 0 rgba(255,255,255,.08)}
+.monitor .vf2{position:absolute;inset:10px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.7);text-transform:uppercase;pointer-events:none}
+.monitor .vf2 .a{position:absolute;top:0;left:0}.monitor .vf2 .b{position:absolute;top:0;right:0}.monitor .vf2 .c{position:absolute;bottom:0;left:0}.monitor .vf2 .d{position:absolute;bottom:0;right:0}
+.monitor .thirds{opacity:1}
+.monitor-cap{margin-top:12px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);display:flex;justify-content:space-between}
+.controls{display:grid;gap:18px}
+.ctrl label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:8px 11px;border:1px solid var(--line);color:#c3cbdb;transition:all .2s}
+.seg button:hover{border-color:var(--line2);color:#fff}
+.seg button.on{background:var(--tung);border-color:var(--tung);color:#060a18}
+.prompt{margin-top:6px;border:1px solid var(--line2);background:#0a0e1a;padding:18px 18px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#dbe2ef;position:relative}
+.prompt .lbl{display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:.2em;color:var(--tung);text-transform:uppercase;margin-bottom:10px}
+.prompt .lbl button{font-family:var(--mono);font-size:10px;letter-spacing:.18em;border:1px solid var(--line2);padding:5px 9px;text-transform:uppercase;color:var(--paper)}
+.prompt .lbl button:hover{border-color:var(--tung);color:var(--tung)}
+.prompt .hl{color:var(--tung)}
+
+/* PIPELINE timeline */
+.nle{margin-top:64px;-webkit-overflow-scrolling:touch;border:1px solid var(--line2);background:#070a14;font-family:var(--mono);font-size:11px;position:relative;overflow:hidden}
+.nle-head{display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);color:var(--mute);letter-spacing:.14em;text-transform:uppercase}
+.nle-head b{color:var(--tung);font-weight:500}
+.ruler{display:grid;grid-template-columns:70px 1fr;border-bottom:1px solid var(--line)}
+.ruler .ticks{height:26px;background:repeating-linear-gradient(90deg,var(--line2) 0 1px,transparent 1px 12.5%),repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 2.5%);background-size:100% 100%,100% 40%;background-repeat:no-repeat;background-position:0 0,0 100%;position:relative;color:var(--dim)}
+.tr{display:grid;grid-template-columns:70px 1fr;border-bottom:1px solid var(--line);min-height:64px}
+.tr:last-child{border-bottom:0}
+.tr .nm{display:flex;align-items:center;justify-content:center;border-right:1px solid var(--line);color:var(--mute);letter-spacing:.14em}
+.tr .lane{position:relative}
+.clip{position:absolute;top:8px;bottom:8px;border-radius:3px;padding:8px 10px;overflow:hidden;color:#060a18;font-weight:500;letter-spacing:.04em;display:flex;flex-direction:column;justify-content:space-between;transform:scaleX(0);transform-origin:left;transition:transform .9s cubic-bezier(.2,.7,.2,1)}
+.nle.in .clip{transform:scaleX(1)}
+.clip small{font-weight:400;opacity:.75;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clip strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clip.v{background:linear-gradient(180deg,#a9c2ff,#7aa2ff)}
+.clip.i{background:linear-gradient(180deg,#d9c6ff,#b58cff)}
+.clip.w{background:linear-gradient(180deg,#e8e2d6,#c9c2b4)}
+.clip.a{background:repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 2px,transparent 2px 5px),linear-gradient(180deg,#c6f0ff,#9fe3ff)}
+.clip.g{background:linear-gradient(90deg,#7aa2ff,#b58cff,#9fe3ff)}
+.playhead{position:absolute;top:36px;bottom:0;width:2px;background:var(--rec);left:70px;z-index:3;box-shadow:0 0 12px var(--rec);transition:left .1s linear}
+.playhead::before{content:"";position:absolute;top:-10px;left:-6px;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid var(--rec)}
+@media(max-width:760px){.nle{overflow-x:auto}.nle-inner{min-width:820px}}
+.steps{margin-top:40px;display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+@media(max-width:900px){.steps{grid-template-columns:repeat(2,1fr)}}
+.steps div{border-top:1px solid var(--line2);padding-top:16px}
+.steps b{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--tung);font-weight:500}
+.steps h5{font-family:var(--serif);font-weight:400;font-size:26px;margin:6px 0 6px}
+.steps p{font-size:13.5px;color:#97a0b3}
+
+/* ABOUT */
+.about{display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(30px,6vw,96px);margin-top:56px}
+@media(max-width:900px){.about{grid-template-columns:1fr}}
+.portrait{position:relative;aspect-ratio:4/5;border:1px solid var(--line2);overflow:hidden;background:radial-gradient(60% 50% at 70% 30%,rgba(110,140,255,.5),transparent 60%),radial-gradient(50% 50% at 20% 80%,rgba(181,140,255,.18),transparent 60%),#0a0806}
+.portrait .mono{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--serif);font-size:clamp(140px,20vw,280px);font-style:italic;color:transparent;-webkit-text-stroke:1px rgba(215,222,235,.55);line-height:1}
+.portrait .lab{position:absolute;left:16px;right:16px;bottom:14px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(215,222,235,.75)}
+.bio p{font-size:clamp(16px,1.35vw,19px);color:#c7cfde;font-weight:300;margin-bottom:18px}
+.bio p strong{color:var(--paper);font-weight:600}
+.bio .big{font-family:var(--serif);font-size:clamp(28px,3vw,42px);line-height:1.12;color:var(--paper);font-weight:400;margin-bottom:28px}
+.bio .big em{color:var(--tung)}
+.credits{margin-top:36px;border-top:1px solid var(--line)}
+.credit{display:grid;grid-template-columns:140px 1fr;gap:20px;padding:20px 0;border-bottom:1px solid var(--line)}
+@media(max-width:560px){.credit{grid-template-columns:1fr;gap:6px}}
+.credit .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);padding-top:4px}
+.credit h6{font-size:17px;font-weight:600}
+.credit h6 span{color:var(--tung);font-weight:400}
+.credit p{font-size:14px;color:#97a0b3;margin-top:4px}
+.credit ul{list-style:none;display:grid;gap:6px}
+.credit li{font-size:14.5px;color:#c7cfde}
+.credit li a{border-bottom:1px solid var(--line2);transition:border-color .2s}
+.credit li a:hover{border-color:var(--tung)}
+
+/* SERVICES */
+.svc{margin-top:56px;border-top:1px solid var(--line)}
+.svc-row{display:grid;grid-template-columns:90px 1fr 1.1fr 40px;gap:24px;align-items:center;padding:28px 0;border-bottom:1px solid var(--line);position:relative;transition:padding .35s}
+.svc-row::before{content:"";position:absolute;inset:0;background:var(--grad);transform:scaleY(0);transform-origin:bottom;transition:transform .45s cubic-bezier(.2,.7,.2,1);z-index:-1}
+.svc-row:hover::before{transform:scaleY(1)}
+.svc-row:hover{color:#060a18;padding-left:18px;padding-right:18px}
+.svc-row:hover p,.svc-row:hover .n{color:#1a2350}
+.svc-row .n{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.2em}
+.svc-row h4{font-family:var(--serif);font-weight:400;font-size:clamp(28px,3.4vw,50px);line-height:1}
+.svc-row p{font-size:14.5px;color:#97a0b3}
+.svc-row .arr{font-size:22px;text-align:right}
+@media(max-width:760px){.svc-row{grid-template-columns:1fr;gap:8px}.svc-row .arr{display:none}}
+section.svcs{isolation:isolate}
+
+/* CONTACT */
+.contact{padding:clamp(110px,14vw,200px) 0 80px;text-align:center;position:relative;overflow:hidden}
+.contact::before{content:"";position:absolute;left:50%;top:40%;width:80vmax;height:50vmax;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(90,120,255,.22),transparent);filter:blur(20px);z-index:-1}
+.contact .k{font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:var(--tung);text-transform:uppercase}
+.contact h2{font-size:clamp(70px,14vw,230px);margin-top:16px}
+.contact .lede{margin:24px auto 0}
+.contact-links{margin:46px auto 0;display:flex;flex-wrap:wrap;justify-content:center;gap:12px;max-width:900px}
+.contact-links .btn{font-size:11.5px}
+.copy-note{margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:.14em;min-height:16px}
+
+/* end credits footer */
+footer{border-top:1px solid var(--line);padding:30px clamp(20px,5vw,64px);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+footer .fade{color:var(--paper)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(28px);transition:opacity 1s ease,transform 1s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+
+/* ---- typography refinements ---- */
+h1.title{font-weight:800;font-stretch:115%;text-transform:uppercase;letter-spacing:-.025em;line-height:.9;font-size:clamp(54px,10vw,160px)}
+h1.title em{font-style:normal;font-weight:700;-webkit-text-stroke:1.3px rgba(215,222,235,.9)}
+h2{font-weight:600;letter-spacing:-.035em;line-height:1;font-size:clamp(40px,5.8vw,88px)}
+h2 em{font-style:normal;font-weight:300;letter-spacing:-.03em}
+.track span{font-weight:500;font-stretch:110%;text-transform:uppercase;letter-spacing:.02em;font-size:clamp(17px,1.8vw,24px)}
+.card-body h3{font-weight:600;letter-spacing:-.02em;line-height:1.08;font-size:clamp(20px,1.8vw,26px)}
+.card.feature .card-body h3{font-size:clamp(28px,3.6vw,54px);letter-spacing:-.03em}
+.craft h4{font-weight:600;font-size:21px;letter-spacing:-.01em}
+.steps h5{font-weight:600;font-size:20px;letter-spacing:-.01em}
+.bio .big{font-weight:400;letter-spacing:-.02em;font-size:clamp(24px,2.3vw,32px);line-height:1.25}
+.bio .big em{font-style:normal;font-weight:600;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.svc-row h4{font-weight:600;letter-spacing:-.025em;font-size:clamp(22px,2.6vw,38px)}
+.leader-num{font-weight:800;font-stretch:115%}
+.contact h2{font-weight:800;font-stretch:115%;text-transform:uppercase;letter-spacing:-.03em;font-size:clamp(60px,11vw,180px)}
+.hero-row p,.lede,.bio p{font-weight:400}
+/* ---- about: director slate card ---- */
+.idcard{border:1px solid var(--line2);background:#0a0e1a;align-self:start;position:sticky;top:96px}
+.clap{height:44px;background:repeating-linear-gradient(-55deg,#f2ede4 0 20px,#0b0b0b 20px 40px);border-bottom:1px solid var(--line2)}
+.id-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+.f{background:#0a0e1a;padding:16px 18px}
+.f.wide{grid-column:span 2}
+.f small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+.f b{font-weight:600;font-size:15.5px;line-height:1.35;display:block}
+.f b.name{font-family:var(--serif);font-weight:800;font-stretch:115%;text-transform:uppercase;font-size:clamp(26px,2.6vw,36px);letter-spacing:-.02em;line-height:1}
+.f b.big{font-family:var(--serif);font-size:46px;font-weight:700;line-height:1;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.id-foot{display:flex;justify-content:space-between;gap:10px;padding:13px 18px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);border-top:1px solid var(--line)}
+.id-foot span:first-child{color:var(--teal)}
+@media(max-width:900px){.idcard{position:relative;top:0}}
+
+/* ================= RESPONSIVE (all screens) ================= */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{overflow-x:clip}
+.hero{height:100vh;height:100svh}
+.btn,#player{-webkit-backdrop-filter:blur(6px)}
+.card.film .playbtn{top:38%}
+#player{padding:max(70px,env(safe-area-inset-top)) 14px max(24px,env(safe-area-inset-bottom))}
+.pl-frame{max-height:78vh;max-height:78dvh}
+.pl-frame.vert{height:min(78vh,820px);height:min(78dvh,820px)}
+nav{padding-top:max(18px,env(safe-area-inset-top))}
+@media(max-width:1000px){
+  .card.film{grid-column:span 12}
+  .card.reel{aspect-ratio:3/4}
+  .card.feature{aspect-ratio:16/10}
+}
+@media(max-width:760px){
+  .steps{gap:22px}
+  .contact-links .btn{width:100%;justify-content:center}
+  .nle-hint{display:block!important}
+}
+@media(max-width:560px){
+  .card.feature{aspect-ratio:4/5}
+  .card.film{aspect-ratio:1/1}
+  .card.reel{aspect-ratio:4/5}
+  .card-body{padding:18px}
+  .card.feature .card-body{padding:20px}
+  .card.feature .poster .sil,.card.film .poster .sil{width:34%;left:50%}
+  .card.feature .playbtn{top:22%}.card.film .playbtn{top:34%}
+  .card.feature .card-body h3{font-size:24px}
+  .poster .sil{display:none}
+  .ctas{flex-direction:column}.ctas .btn{letter-spacing:.14em}
+  .slate > span:last-child{display:none}
+  .slate{gap:12px}
+  .steps{grid-template-columns:1fr}
+  .vf .hr1{display:none}
+  .kicker{font-size:10px;letter-spacing:.24em}
+  .roles{gap:8px 16px;letter-spacing:.16em}
+  .ctas{width:100%}.ctas .btn{flex:1;justify-content:center;padding:14px 16px}
+  .work-foot{flex-direction:column}
+  .craft{min-height:0;padding:24px 20px 26px}
+  .credit{padding:16px 0}
+  .monitor-cap{flex-direction:column;gap:4px}
+  .svc-row:hover{padding-left:12px;padding-right:12px}
+  footer{flex-direction:column;align-items:flex-start}
+  .pl-top{flex-direction:column;align-items:flex-start;gap:10px}
+  .pl-top .acts{width:100%}.pl-top .acts>*{flex:1;text-align:center}
+}
+/* phones held sideways / short screens */
+@media(max-height:520px) and (orientation:landscape){
+  .hero{height:auto;min-height:100vh;min-height:100svh;padding-top:70px}
+  .letterbox{height:5vh}
+  .vf .hl2,.vf .hr2,.vf .cross,.vf .hl1{display:none}
+  .hero-inner{padding-bottom:40px}
+  h1.title{font-size:clamp(44px,16vh,96px)}
+  .hero-row{margin-top:20px}
+  .card.reel{aspect-ratio:9/16}
+  .pl-frame.vert{height:84vh;height:84dvh}
+}
+/* very large screens */
+@media(min-width:1800px){.wrap{max-width:1560px}}
+@media(hover:none){.card .ext{opacity:1}.card:hover .poster{transform:none}}
+</style>
+</head>
+<body>
+<div class="grain"></div><div class="vignette"></div>
+
+<!-- Film leader -->
+<div id="leader" aria-hidden="true">
+  <div class="leader-ring"><div class="leader-sweep" id="sweep"></div><div class="leader-num" id="lnum">3</div></div>
+  <button class="leader-skip" id="skip">SKIP ▸▸</button>
+</div>
+
+<nav>
+  <a class="brand" href="#top"><span class="dot"></span>Ayush Sharma</a>
+  <div class="navlinks">
+    <a href="#work" class="keep"><span>01</span>Work</a>
+    <a href="#craft"><span>02</span>Craft</a>
+    <a href="#pipeline"><span>03</span>Pipeline</a>
+    <a href="#about"><span>04</span>About</a>
+    <a href="#contact" class="keep"><span>05</span>Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <div class="hero-bg"></div><div class="leak a"></div><div class="leak b"></div><div class="flare"></div>
+  <div class="letterbox t"></div><div class="letterbox b"></div>
+  <div class="vf">
+    <div class="thirds"></div>
+    <i></i><i></i><i></i><i></i>
+    <div class="hl1"><b></b>REC <span id="tc">00:00:00:00</span></div>
+    <div class="hr1">A-CAM · 2.39:1 · 4K<br>24 FPS · 180°</div>
+    <div class="hl2">ISO 800 · T1.8 · 35MM<br>WB 3200K <span class="meter" id="meter"><s></s><s></s><s></s><s></s><s></s><s></s><s></s><s></s></span></div>
+    <div class="hr2">SCENE 01 · TAKE 01<br>NOIDA, IN</div>
+    <div class="cross"></div>
+  </div>
+  <div class="hero-inner">
+    <div class="kicker rv">Generative Cinema · Est. 2025</div>
+    <h1 class="title rv">Ayush<br><em>Sharma</em></h1>
+    <div class="roles rv"><b>AI Filmmaker</b><span>/</span><b>Director</b><span>/</span><b>AI Artist</b><span>/</span><span>Prompt Engineer</span></div>
+    <div class="hero-row rv">
+      <p>I direct films where no camera ever rolled — but every frame is shot like one. Lens, light, angle, movement and story, engineered through generative AI.</p>
+      <div class="ctas">
+        <a class="btn solid" href="#work"><span class="play"></span>Watch the work</a>
+        <a class="btn" href="#contact">Book a project</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="marquee" aria-label="Tools">
+  <div class="track">
+    <span>Kling AI</span><span>Seedance 2.0</span><span>Nano Banana</span><span>Higgsfield</span><span>Gemini</span><span>AI Voiceover</span><span>Sound Design</span><span>Character Consistency</span><span>Style Locking</span><span>Zapier</span><span>Notion</span>
+    <span>Kling AI</span><span>Seedance 2.0</span><span>Nano Banana</span><span>Higgsfield</span><span>Gemini</span><span>AI Voiceover</span><span>Sound Design</span><span>Character Consistency</span><span>Style Locking</span><span>Zapier</span><span>Notion</span>
+  </div>
+</div>
+
+<!-- WORK -->
+<section class="scene" id="work">
+  <div class="wrap">
+    <div class="slate rv"><span class="chip">Scene <b>02</b></span><span>Selected Work</span><span class="rule"></span><span>Roll 01–09</span></div>
+    <h2 class="rv">Frames from<br>the <em>edit bay.</em></h2>
+    <p class="lede rv">Brand films, story pieces and animated AI shorts — each built through the same pipeline: script, shot list, consistent characters, directed camera, finished sound.</p>
+
+    <div class="work-grid">
+      <a href="https://drive.google.com/file/d/1wsoPN7wY4Hr2bhDGz2y7y9jEBG8blH4G/view?usp=sharing" target="_blank" rel="noopener" class="card feature rv" data-type="drive" data-id="1wsoPN7wY4Hr2bhDGz2y7y9jEBG8blH4G" data-title="GEN AI Showreel" data-url="https://drive.google.com/file/d/1wsoPN7wY4Hr2bhDGz2y7y9jEBG8blH4G/view?usp=sharing" data-preview="previews/showreel.mp4">
+        <div class="poster p0"><div class="sil"></div><div class="scan"></div></div>
+        <div class="card-hud"><span class="r">Roll 01 · Showreel</span><span>16:9 · Master</span></div>
+        <div class="playbtn"></div>
+        <div class="card-body"><div class="tag">Showreel · Brands · Stories · Animated Shorts</div><h3>GEN AI Showreel — every frame generated, every shot directed.</h3><p>A cut of AI videos made for brands, narrative stories and animated shorts — produced end to end with one text → image → video → audio workflow.</p></div>
+        <span class="ext">Watch on Drive ↗</span>
+      </a>
+      <div class="grid-label rv"><b>A</b> AI Films &amp; Shorts <i></i> Drive</div>
+      <a href="https://drive.google.com/file/d/1KU_W6JhO7w8mnZy9WDbogytL7Kv_XkVZ/view?usp=sharing" target="_blank" rel="noopener" class="card film rv" data-type="drive" data-id="1KU_W6JhO7w8mnZy9WDbogytL7Kv_XkVZ" data-title="AI Film 01" data-url="https://drive.google.com/file/d/1KU_W6JhO7w8mnZy9WDbogytL7Kv_XkVZ/view?usp=sharing" data-preview="previews/vid1.mp4">
+        <div class="poster p1"><div class="sil"></div><div class="scan"></div></div>
+        <div class="card-hud"><span class="r">Roll 02</span><span>16:9</span></div>
+        <div class="playbtn"></div>
+        <div class="card-body"><div class="tag">AI Film · Roll 02</div><h3>AI Film 01</h3><p>Generative short — story, character and camera direction built through the AI pipeline.</p></div>
+        <span class="ext">Watch on Drive ↗</span>
+      </a>
+      <a href="https://drive.google.com/file/d/1PTkvdjuVg96XsBM4HOjfxXpDXPoIUoPF/view?usp=sharing" target="_blank" rel="noopener" class="card film rv" data-type="drive" data-id="1PTkvdjuVg96XsBM4HOjfxXpDXPoIUoPF" data-title="AI Film 02" data-url="https://drive.google.com/file/d/1PTkvdjuVg96XsBM4HOjfxXpDXPoIUoPF/view?usp=sharing" data-preview="previews/vid2.mp4">
+        <div class="poster p3"><div class="sil"></div><div class="scan"></div></div>
+        <div class="card-hud"><span class="r">Roll 03</span><span>16:9</span></div>
+        <div class="playbtn"></div>
+        <div class="card-body"><div class="tag">AI Film · Roll 03</div><h3>AI Film 02</h3><p>Generative short — story, character and camera direction built through the AI pipeline.</p></div>
+        <span class="ext">Watch on Drive ↗</span>
+      </a>
+      <a href="https://drive.google.com/file/d/1U3DHcANhkDLppZVtsTXGTNRZLjVUii_e/view?usp=sharing" target="_blank" rel="noopener" class="card film rv" data-type="drive" data-id="1U3DHcANhkDLppZVtsTXGTNRZLjVUii_e" data-title="AI Film 03" data-url="https://drive.google.com/file/d/1U3DHcANhkDLppZVtsTXGTNRZLjVUii_e/view?usp=sharing" data-preview="previews/project6.mp4">
+        <div class="poster p2"><div class="sil"></div><div class="scan"></div></div>
+        <div class="card-hud"><span class="r">Roll 04</span><span>16:9</span></div>
+        <div class="playbtn"></div>
+        <div class="card-body"><div class="tag">AI Film · Roll 04</div><h3>AI Film 03</h3><p>Generative short — story, character and camera direction built through the AI pipeline.</p></div>
+        <span class="ext">Watch on Drive ↗</span>
+      </a>
+      <a href="https://drive.google.com/file/d/1GvNJJXe43VeXvvdMimJ9cNGWd3AjTM7C/view?usp=sharing" target="_blank" rel="noopener" class="card film rv" data-type="drive" data-id="1GvNJJXe43VeXvvdMimJ9cNGWd3AjTM7C" data-title="AI Film 04" data-url="https://drive.google.com/file/d/1GvNJJXe43VeXvvdMimJ9cNGWd3AjTM7C/view?usp=sharing" data-preview="previews/project11.mp4">
+        <div class="poster p5"><div class="sil"></div><div class="scan"></div></div>
+        <div class="card-hud"><span class="r">Roll 05</span><span>16:9</span></div>
+        <div class="playbtn"></div>
+        <div class="card-body"><div class="tag">AI Film · Roll 05</div><h3>AI Film 04</h3><p>Generative short — story, character and camera direction built through the AI pipeline.</p></div>
+        <span class="ext">Watch on Drive ↗</span>
+      </a>
+      <div class="grid-label rv"><b>B</b> Brand Reels &amp; Ads <i></i> Instagram @anyfinite</div>
+      <a href="https://www.instagram.com/reel/DeYU-g_hxpy/" target="_blank" rel="noopener" class="card reel rv" data-type="ig" data-id="DeYU-g_hxpy" data-title="Koshbook — Money Managed" data-url="https://www.instagram.com/reel/DeYU-g_hxpy/" data-preview="previews/koshbook.mp4">
+        <div class="poster p1"><div class="sil"></div><div class="scan"></div></div>
+        <div class="card-hud"><span class="r">Roll 06</span><span>9:16</span></div>
+        <div class="playbtn"></div>
+        <div class="card-body"><div class="tag">Fintech Ad · Oct 2026</div><h3>Koshbook</h3><p>Voice-logged expenses, group splits and spending insights — an expense-tracker app ad.</p></div>
+        <span class="ext">Instagram ↗</span>
+      </a>
+      <a href="https://www.instagram.com/reel/Ddi4Q0LP-Wt/" target="_blank" rel="noopener" class="card reel rv" data-type="ig" data-id="Ddi4Q0LP-Wt" data-title="Budget Smarter" data-url="https://www.instagram.com/reel/Ddi4Q0LP-Wt/" data-preview="previews/budget.mp4">
+        <div class="poster p2"><div class="sil"></div><div class="scan"></div></div>
+        <div class="card-hud"><span class="r">Roll 07</span><span>9:16</span></div>
+        <div class="playbtn"></div>
+        <div class="card-body"><div class="tag">Fintech Story · Sep 2026</div><h3>Budget Smarter</h3><p>A workplace-set story spot for a smart budgeting &amp; expense app.</p></div>
+        <span class="ext">Instagram ↗</span>
+      </a>
+      <a href="https://www.instagram.com/reel/DZb5nwvuw1O/" target="_blank" rel="noopener" class="card reel rv" data-type="ig" data-id="DZb5nwvuw1O" data-title="The Verdict — Progly" data-url="https://www.instagram.com/reel/DZb5nwvuw1O/" data-preview="previews/verdict.mp4">
+        <div class="poster p3"><div class="sil"></div><div class="scan"></div></div>
+        <div class="card-hud"><span class="r">Roll 08</span><span>9:16</span></div>
+        <div class="playbtn"></div>
+        <div class="card-body"><div class="tag">Comedy Ad · Jun 2026</div><h3>The Verdict</h3><p>Gen-Z courtroom comedy: “kal se nahi, abhi se” — the court sentences you to download Progly.</p></div>
+        <span class="ext">Instagram ↗</span>
+      </a>
+      <a href="https://www.instagram.com/reel/DYywn2xpvCZ/" target="_blank" rel="noopener" class="card reel rv" data-type="ig" data-id="DYywn2xpvCZ" data-title="Introducing Progly" data-url="https://www.instagram.com/reel/DYywn2xpvCZ/" data-preview="previews/progly.mp4">
+        <div class="poster p4"><div class="sil"></div><div class="scan"></div></div>
+        <div class="card-hud"><span class="r">Roll 09</span><span>9:16</span></div>
+        <div class="playbtn"></div>
+        <div class="card-body"><div class="tag">Launch Film · May 2026</div><h3>Introducing Progly</h3><p>Launch film for an AI productivity app — goal planner, smart to-dos and focus tracking.</p></div>
+        <span class="ext">Instagram ↗</span>
+      </a>
+    </div>
+    <div class="work-foot rv"><span>Click any frame to watch</span><span>More on Instagram — <a href="https://www.instagram.com/anyfinite/" target="_blank" rel="noopener">@anyfinite ↗</a></span></div>
+  </div>
+</section>
+
+<!-- CRAFT -->
+<section class="scene" id="craft" style="background:var(--ink2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="slate rv"><span class="chip">Scene <b>03</b></span><span>The Director's Eye</span><span class="rule"></span><span>Craft</span></div>
+    <h2 class="rv">AI is the camera.<br><em>Direction</em> is the film.</h2>
+    <p class="lede rv">Anyone can type a prompt. I think in shots — where the lens sits, how it moves, where light falls, and what the audience should feel when the cut lands.</p>
+
+    <div class="craft-grid">
+      <div class="craft rv"><span class="no">01</span>
+        <svg viewBox="0 0 58 58"><rect x="6" y="18" width="32" height="24" rx="2"/><path d="M38 26l14-7v20l-14-7z"/><circle cx="16" cy="12" r="5"/><circle cx="29" cy="12" r="5"/></svg>
+        <h4>Camera Direction</h4><p>Shot lists and coverage planned like a real set — establishing, coverage, inserts, reaction.</p>
+        <div class="terms"><span>Shot list</span><span>Coverage</span><span>Blocking</span><span>180° rule</span></div></div>
+      <div class="craft rv"><span class="no">02</span>
+        <svg viewBox="0 0 58 58"><path d="M6 44h46"/><rect x="18" y="20" width="18" height="12" rx="2"/><path d="M36 26h8"/><circle cx="20" cy="48" r="3"/><circle cx="34" cy="48" r="3"/><path d="M8 14c10-8 32-8 42 0" stroke-dasharray="3 3"/></svg>
+        <h4>Camera Movement</h4><p>Motion with intent — every push-in, orbit and crane earns its place in the scene.</p>
+        <div class="terms"><span>Dolly</span><span>Push-in</span><span>Orbit</span><span>Crane</span><span>Handheld</span><span>FPV</span></div></div>
+      <div class="craft rv"><span class="no">03</span>
+        <svg viewBox="0 0 58 58"><circle cx="29" cy="29" r="20"/><circle cx="29" cy="29" r="11"/><path d="M29 9v9M29 40v9M9 29h9M40 29h9"/></svg>
+        <h4>Angles &amp; Lenses</h4><p>Choosing the lens that tells the truth of the moment — wide for scale, long for intimacy.</p>
+        <div class="terms"><span>Low angle</span><span>Dutch</span><span>OTS</span><span>Top shot</span><span>24 / 35 / 85mm</span></div></div>
+      <div class="craft rv"><span class="no">04</span>
+        <svg viewBox="0 0 58 58"><circle cx="20" cy="22" r="8"/><path d="M20 6v4M20 34v4M4 22h4M32 22h4M9 11l3 3M28 30l3 3M31 11l-3 3"/><path d="M30 44l20-10v18z"/></svg>
+        <h4>Lighting</h4><p>Motivated light, contrast ratios and colour temperature — the mood is lit, not filtered.</p>
+        <div class="terms"><span>Rembrandt</span><span>Rim light</span><span>Practicals</span><span>Golden hour</span><span>Neon noir</span></div></div>
+      <div class="craft rv"><span class="no">05</span>
+        <svg viewBox="0 0 58 58"><rect x="6" y="12" width="46" height="34"/><path d="M21 12v34M37 12v34M6 23h46M6 35h46"/><circle cx="37" cy="23" r="3"/></svg>
+        <h4>Composition</h4><p>Frames that guide the eye: thirds, leading lines, depth layers and negative space.</p>
+        <div class="terms"><span>Rule of thirds</span><span>Leading lines</span><span>Depth</span><span>2.39:1</span></div></div>
+      <div class="craft rv"><span class="no">06</span>
+        <svg viewBox="0 0 58 58"><circle cx="18" cy="20" r="7"/><path d="M6 46c0-8 5-14 12-14s12 6 12 14"/><circle cx="40" cy="20" r="7" stroke-dasharray="3 2"/><path d="M28 46c0-8 5-14 12-14s12 6 12 14" stroke-dasharray="3 2"/></svg>
+        <h4>Character Consistency</h4><p>Same face, same wardrobe, same world — across every shot of a long-form series.</p>
+        <div class="terms"><span>Reference sheets</span><span>Style locking</span><span>Continuity</span></div></div>
+      <div class="craft rv"><span class="no">07</span>
+        <svg viewBox="0 0 58 58"><path d="M6 29h6l4-12 6 26 6-34 6 30 5-16 4 6h9"/></svg>
+        <h4>Voice &amp; Sound</h4><p>AI voiceover, sync and sound design that make generated images feel alive.</p>
+        <div class="terms"><span>VO</span><span>Lip-sync</span><span>Foley</span><span>Score</span></div></div>
+      <div class="craft rv"><span class="no">08</span>
+        <svg viewBox="0 0 58 58"><rect x="6" y="14" width="46" height="8"/><rect x="6" y="26" width="30" height="8"/><rect x="22" y="38" width="30" height="8"/><path d="M40 8v44" stroke="#ff3b30"/></svg>
+        <h4>Edit &amp; Pacing</h4><p>Rhythm, match cuts and hooks for short-form and long-form — refined to final output.</p>
+        <div class="terms"><span>Match cut</span><span>J/L cuts</span><span>Hooks</span><span>Grade</span></div></div>
+    </div>
+
+    <!-- shot builder -->
+    <div class="builder">
+      <div class="rv">
+        <div class="slate" style="margin-bottom:16px"><span class="chip">Interactive</span><span>Shot Builder</span><span class="rule"></span></div>
+        <div class="monitor" id="monitor">
+          <div class="monitor-stage" id="stage"></div>
+          <div class="monitor-subj" id="subj"><div class="head"></div><div class="body"></div></div>
+          <div class="thirds"></div>
+          <div class="vf2"><span class="a" id="m1">MCU · EYE LEVEL</span><span class="b" id="m2">35MM · T2</span><span class="c" id="m3">STATIC</span><span class="d" id="m4">5600K MOON</span></div>
+        </div>
+        <div class="monitor-cap"><span>Live monitor</span><span>This is how I brief the model ↓</span></div>
+      </div>
+      <div class="controls rv">
+        <div class="ctrl"><label>Shot size</label><div class="seg" data-k="size">
+          <button data-v="ws">Wide</button><button data-v="ms">Medium</button><button data-v="mcu" class="on">MCU</button><button data-v="cu">Close-up</button><button data-v="ecu">Extreme CU</button></div></div>
+        <div class="ctrl"><label>Angle</label><div class="seg" data-k="angle">
+          <button data-v="eye" class="on">Eye level</button><button data-v="low">Low angle</button><button data-v="high">High angle</button><button data-v="dutch">Dutch tilt</button></div></div>
+        <div class="ctrl"><label>Movement</label><div class="seg" data-k="move">
+          <button data-v="static" class="on">Static</button><button data-v="push">Slow push-in</button><button data-v="orbit">Orbit</button><button data-v="crane">Crane up</button><button data-v="hand">Handheld</button></div></div>
+        <div class="ctrl"><label>Lighting</label><div class="seg" data-k="light">
+          <button data-v="moon" class="on">Moonlight</button><button data-v="tung">Tungsten key</button><button data-v="rem">Rembrandt</button><button data-v="rim">Rim / backlit</button><button data-v="neon">Neon noir</button><button data-v="gold">Golden hour</button></div></div>
+        <div class="ctrl"><label>Lens</label><div class="seg" data-k="lens">
+          <button data-v="24">24mm</button><button data-v="35" class="on">35mm</button><button data-v="50">50mm</button><button data-v="85">85mm</button></div></div>
+        <div class="prompt"><div class="lbl"><span>Generated shot prompt</span><button id="copyPrompt">Copy</button></div><div id="promptText"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section class="scene" id="pipeline">
+  <div class="wrap">
+    <div class="slate rv"><span class="chip">Scene <b>04</b></span><span>The Pipeline</span><span class="rule"></span><span>Text → Image → Video → Audio</span></div>
+    <h2 class="rv">From a sentence<br>to a <em>master file.</em></h2>
+    <p class="lede rv">An end-to-end production pipeline, built and refined on real AI drama and brand projects — so every output is structured, repeatable and on-brief.</p>
+
+    <div class="nle-hint" style="display:none;margin-top:40px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute)">← Swipe the timeline →</div>
+    <div class="nle rv" id="nle"><div class="nle-inner">
+      <div class="nle-head"><span>Sequence — <b>AI_FILM_MASTER_v3</b></span><span id="nletc">00:00:00:00</span></div>
+      <div class="ruler"><div></div><div class="ticks"></div></div>
+      <div class="tr"><div class="nm">W1</div><div class="lane">
+        <div class="clip w" style="left:0;width:13%;transition-delay:.0s"><small>Ideation</small><strong>Concept</strong></div>
+        <div class="clip w" style="left:13.5%;width:13%;transition-delay:.1s"><small>Gemini</small><strong>Script</strong></div>
+        <div class="clip w" style="left:27%;width:12%;transition-delay:.2s"><small>Shot list</small><strong>Storyboard</strong></div></div></div>
+      <div class="tr"><div class="nm">I1</div><div class="lane">
+        <div class="clip i" style="left:27%;width:14%;transition-delay:.3s"><small>Nano Banana</small><strong>Char sheets</strong></div>
+        <div class="clip i" style="left:41.5%;width:16%;transition-delay:.4s"><small>Style locked</small><strong>Keyframes</strong></div></div></div>
+      <div class="tr"><div class="nm">V1</div><div class="lane">
+        <div class="clip v" style="left:46%;width:13%;transition-delay:.5s"><small>Kling AI</small><strong>Sc 01</strong></div>
+        <div class="clip v" style="left:59.5%;width:11%;transition-delay:.6s"><small>Seedance 2.0</small><strong>Sc 02</strong></div>
+        <div class="clip v" style="left:71%;width:10%;transition-delay:.7s"><small>Higgsfield</small><strong>Sc 03</strong></div></div></div>
+      <div class="tr"><div class="nm">A1</div><div class="lane">
+        <div class="clip a" style="left:52%;width:30%;transition-delay:.8s"><small>AI voiceover · sync</small><strong>Dialogue / VO</strong></div></div></div>
+      <div class="tr"><div class="nm">A2</div><div class="lane">
+        <div class="clip a" style="left:60%;width:28%;transition-delay:.9s;filter:hue-rotate(40deg)"><small>Music · SFX</small><strong>Sound design</strong></div></div></div>
+      <div class="tr"><div class="nm">FX</div><div class="lane">
+        <div class="clip g" style="left:82%;width:17.5%;transition-delay:1s"><small>Grade · refine</small><strong>MASTER</strong></div></div></div>
+      <div class="playhead" id="playhead"></div>
+    </div></div>
+
+    <div class="steps">
+      <div class="rv"><b>01 — WRITE</b><h5>Story &amp; script</h5><p>Ideation, scripting and narrative design — structured into a scene-by-scene shot list.</p></div>
+      <div class="rv"><b>02 — DESIGN</b><h5>Look &amp; characters</h5><p>Character sheets, style locking and keyframes that keep every shot in the same world.</p></div>
+      <div class="rv"><b>03 — SHOOT</b><h5>Directed generation</h5><p>Multi-step prompting with camera, lens, movement and light written into every shot.</p></div>
+      <div class="rv"><b>04 — FINISH</b><h5>Sound, edit, master</h5><p>AI voiceover, sound sync, pacing, troubleshooting and refinement to final delivery.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="scene" id="about" style="background:var(--ink2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="slate rv"><span class="chip">Scene <b>05</b></span><span>Behind the Camera</span><span class="rule"></span><span>About</span></div>
+    <h2 class="rv">Engineer's brain.<br><em>Filmmaker's</em> eye.</h2>
+    <div class="about">
+      <div class="idcard rv">
+        <div class="clap"></div>
+        <div class="id-grid">
+          <div class="f wide"><small>Director</small><b class="name">Ayush Sharma</b></div>
+          <div class="f"><small>Role</small><b>AI Filmmaker</b></div>
+          <div class="f"><small>Also</small><b>Director · AI Artist</b></div>
+          <div class="f"><small>Base</small><b>Noida, India</b></div>
+          <div class="f"><small>Formats</small><b>Shorts · Series · Ads</b></div>
+          <div class="f wide"><small>Toolkit</small><b>Kling AI · Seedance 2.0 · Nano Banana · Higgsfield · Gemini</b></div>
+          <div class="f"><small>Scene</small><b class="big">05</b></div>
+          <div class="f"><small>Take</small><b class="big">01</b></div>
+        </div>
+        <div class="id-foot"><span>● Available for projects</span><span>Roll AS-2026</span></div>
+      </div>
+      <div class="bio">
+        <p class="big rv">I'm an AI Creative Technologist who turns ideas into <em>cinematic, structured video</em> — from first line of script to final mix.</p>
+        <p class="rv">My foundation is in <strong>Machine Learning, Prompt Engineering and Generative AI</strong>. My obsession is cinema — how a low angle builds power, how a rim light separates a character from the night, how a slow push-in makes a line land.</p>
+        <p class="rv">At <strong>Animaster</strong> I worked across the full AI film production pipeline — ideation, scripting, visual generation, editing and final output — on <strong>Chinese and Korean drama-style AI series</strong>, with a focus on character consistency, cinematic visuals and storytelling. I experiment constantly with new tools and workflows to push quality higher.</p>
+
+        <div class="credits">
+          <div class="credit rv"><div class="k">Experience</div><div><h6>AI Artist Intern <span>— Animaster</span></h6><p>End-to-end AI film production on C-drama &amp; K-drama style series: character consistency, cinematic visuals, storytelling, team tool R&amp;D.</p></div></div>
+          <div class="credit rv"><div class="k">Project</div><div><h6>Progly <span>— AI productivity platform</span></h6><p>AI implementation and prompt engineering for a tool that helps users stay focused, track goals and improve productivity. <a href="https://progly.in/landing" target="_blank" rel="noopener" style="border-bottom:1px solid var(--tung)">progly.in ↗</a></p></div></div>
+          <div class="credit rv"><div class="k">Achievement</div><div><h6>Global Hyperloop Competition <span>— IIT Madras</span></h6><p>Team leader. Led the team to qualify among the top teams and present our research at IIT Madras.</p></div></div>
+          <div class="credit rv"><div class="k">Education</div><div><h6>B.Tech <span>— Greater Noida Institute of Technology, 2025</span></h6><p>Minor in Artificial Intelligence &amp; Data Science with IIT Indore × Microsoft.</p></div></div>
+          <div class="credit rv"><div class="k">Certifications</div><div><ul>
+            <li><a href="https://www.linkedin.com/learning/certificates/1444fd643fadb6602fd67f6e8a9d4eb8383ba071ae806e735f7784b4df9a488f" target="_blank" rel="noopener">Generative AI — Microsoft ↗</a></li>
+            <li><a href="https://www.coursera.org/account/accomplishments/verify/CYSD5JPF8JSY" target="_blank" rel="noopener">Supervised Learning — DeepLearning.AI ↗</a></li>
+            <li><a href="https://www.coursera.org/account/accomplishments/verify/9CFP8S3S7BSA" target="_blank" rel="noopener">UI/UX Design — Google ↗</a></li>
+            <li><a href="https://www.linkedin.com/learning/certificates/ba5a3dc25e2c7b456778a7b24d63e0f304c228425a7d21840b1ec3888c464a9d" target="_blank" rel="noopener">Software Development — Microsoft ↗</a></li>
+          </ul></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="scene svcs" id="services">
+  <div class="wrap">
+    <div class="slate rv"><span class="chip">Scene <b>06</b></span><span>What I Can Do</span><span class="rule"></span><span>Services</span></div>
+    <h2 class="rv">What I bring<br>to <em>your</em> production.</h2>
+    <div class="svc">
+      <div class="svc-row rv"><span class="n">01</span><h4>AI Short Films &amp; Micro-Dramas</h4><p>Episodic and long-form AI storytelling with consistent characters, scene continuity and real cinematic grammar.</p><span class="arr">→</span></div>
+      <div class="svc-row rv"><span class="n">02</span><h4>Brand Films &amp; Product Ads</h4><p>Scroll-stopping AI commercials and reels — concept, script, visuals, voice and edit delivered as one package.</p><span class="arr">→</span></div>
+      <div class="svc-row rv"><span class="n">03</span><h4>Direction &amp; Shot Design</h4><p>Shot lists, camera angles, movement and lighting plans written as prompt frameworks your team can reuse.</p><span class="arr">→</span></div>
+      <div class="svc-row rv"><span class="n">04</span><h4>AI Art &amp; Character Design</h4><p>Key art, character sheets and style-locked visual worlds for films, campaigns and social.</p><span class="arr">→</span></div>
+      <div class="svc-row rv"><span class="n">05</span><h4>Pipeline &amp; Workflow Setup</h4><p>End-to-end text → image → video → audio pipelines and automation (Zapier, Notion) for content teams.</p><span class="arr">→</span></div>
+      <div class="svc-row rv"><span class="n">06</span><h4>AI Editing &amp; Post</h4><p>Voiceover, sound sync, pacing, refinement and troubleshooting to a polished final master.</p><span class="arr">→</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div class="k rv">Scene 07 · Final Cut</div>
+    <h2 class="rv">Let's <em>roll.</em></h2>
+    <p class="lede rv">Have a story, a brand or a series that needs to be seen? Send the brief — I'll send back a shot list.</p>
+    <div class="contact-links rv">
+      <button class="btn solid" id="copyEmail">sharmaayush2004sa@gmail.com</button>
+      <a class="btn" href="https://www.linkedin.com/in/ayush-sharma-122121220/" target="_blank" rel="noopener">LinkedIn ↗</a>
+      <a class="btn" href="https://www.instagram.com/anyfinite/" target="_blank" rel="noopener">Instagram ↗</a>
+    </div>
+    <div class="copy-note" id="copyNote">Click the email to copy it</div>
+  </div>
+</section>
+
+<footer>
+  <span class="fade">Fade out.</span>
+  <span>Written, directed &amp; generated by Ayush Sharma</span>
+  <span>© <span id="yr">2026</span> · Noida, India</span>
+</footer>
+
+<!-- player modal -->
+<div id="player" role="dialog" aria-modal="true">
+  <div class="pl-top"><span class="t" id="plTitle">Now playing</span><div class="acts"><a id="plOpen" href="#" target="_blank" rel="noopener">Open original ↗</a><button id="plClose">Close ✕</button></div></div>
+  <div class="pl-frame" id="plFrame"><div class="pl-fallback">If the player doesn't load here,<br>use “Open original ↗” above.</div></div>
+</div>
+
+<script>
+(function(){
+  // ---------- film leader ----------
+  const leader=document.getElementById('leader'),num=document.getElementById('lnum'),sweep=document.getElementById('sweep');
+  let n=3,start=performance.now(),done=false;
+  function endLeader(){if(done)return;done=true;leader.classList.add('done');document.querySelectorAll('.hero .rv').forEach((e,i)=>setTimeout(()=>e.classList.add('in'),120*i));}
+  function tick(t){if(done)return;const el=(t-start)/450;const k=Math.floor(el);const frac=el-k;
+    if(3-k<1){endLeader();return}
+    num.textContent=3-k;sweep.style.setProperty('--a',(frac*360)+'deg');requestAnimationFrame(tick)}
+  requestAnimationFrame(tick);
+  document.getElementById('skip').onclick=endLeader;
+  setTimeout(endLeader,2200);
+
+  // ---------- timecode ----------
+  const tc=document.getElementById('tc'),nletc=document.getElementById('nletc');const t0=performance.now();
+  const pad=v=>String(v).padStart(2,'0');
+  function fmt(ms){const f=Math.floor(ms/1000*24);const fr=f%24,s=Math.floor(f/24)%60,m=Math.floor(f/1440)%60,h=Math.floor(f/86400);return pad(h)+':'+pad(m)+':'+pad(s)+':'+pad(fr)}
+  const meter=[...document.querySelectorAll('#meter s')];let mt=0;
+  (function loop(t){tc.textContent=fmt(t-t0);if(t-mt>120){mt=t;const lv=3+Math.floor(Math.random()*5);meter.forEach((s,i)=>s.classList.toggle('on',i<lv))}requestAnimationFrame(loop)})(performance.now());
+
+  // ---------- reveal ----------
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+  document.querySelectorAll('.rv').forEach(e=>{if(!e.closest('.hero'))io.observe(e)});
+
+  // ---------- pipeline timeline + playhead ----------
+  const nle=document.getElementById('nle'),ph=document.getElementById('playhead');
+  new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)nle.classList.add('in')}),{threshold:.3}).observe(nle);
+  function onScroll(){const r=nle.getBoundingClientRect();const vh=innerHeight;let p=(vh-r.top)/(vh+r.height);p=Math.max(0,Math.min(1,(p-.15)/.7));
+    const w=nle.querySelector('.nle-inner').offsetWidth-70;ph.style.left=(70+p*w)+'px';nletc.textContent=fmt(p*92000);
+    if(nle.scrollWidth>nle.clientWidth+4&&!nle._touched){nle.scrollLeft=Math.max(0,70+p*w-nle.clientWidth*.6)}}
+  nle.addEventListener('touchstart',()=>{nle._touched=true},{passive:true});
+  addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+  // ---------- hover previews ----------
+  const canHover=matchMedia('(hover:hover)').matches;
+  document.querySelectorAll('.card[data-preview]').forEach(c=>{
+    let v=null,failed=false;
+    const start=()=>{ if(failed) return;
+      if(!v){v=document.createElement('video');v.muted=true;v.loop=true;v.playsInline=true;v.preload='auto';v.src=c.dataset.preview;
+        v.addEventListener('error',()=>{failed=true;v.remove();v=null;c.classList.remove('previewing')});
+        c.querySelector('.poster').appendChild(v)}
+      const pr=v.play(); if(pr&&pr.catch)pr.catch(()=>{}); c.classList.add('previewing') };
+    const stop=()=>{c.classList.remove('previewing'); if(v){v.pause()}};
+    if(canHover){c.addEventListener('mouseenter',start);c.addEventListener('mouseleave',stop)}
+    else{ new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting?start():stop()),{threshold:.6}).observe(c) }
+  });
+
+  // ---------- player ----------
+  const pl=document.getElementById('player'),frame=document.getElementById('plFrame'),ttl=document.getElementById('plTitle'),openA=document.getElementById('plOpen');
+  function openPlayer(c){
+    const type=c.dataset.type,id=c.dataset.id;let src,url;
+    if(type==='ig'){src='https://www.instagram.com/reel/'+id+'/embed/';url='https://www.instagram.com/reel/'+id+'/';frame.classList.add('vert')}
+    else{src='https://drive.google.com/file/d/'+id+'/preview';url=c.dataset.url;frame.classList.remove('vert')}
+    frame.querySelectorAll('iframe').forEach(f=>f.remove());
+    const f=document.createElement('iframe');f.src=src;f.allow='autoplay; encrypted-media; fullscreen; picture-in-picture';f.allowFullscreen=true;f.loading='lazy';frame.appendChild(f);
+    ttl.textContent='Now playing — '+c.dataset.title;openA.href=url;pl.classList.add('open');document.body.style.overflow='hidden';
+  }
+  function closePlayer(){pl.classList.remove('open');frame.querySelectorAll('iframe').forEach(f=>f.remove());document.body.style.overflow=''}
+  const framed=(()=>{try{return window.self!==window.top}catch(e){return true}})();
+  // Inside a preview frame, embedded players are blocked: let the link open the original video in a new tab.
+  document.querySelectorAll('.card').forEach(c=>c.addEventListener('click',e=>{if(framed)return;e.preventDefault();openPlayer(c)}));
+  document.getElementById('plClose').onclick=closePlayer;
+  pl.addEventListener('click',e=>{if(e.target===pl)closePlayer()});
+  addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer()});
+
+  // ---------- shot builder ----------
+  const S={size:'mcu',angle:'eye',move:'static',light:'moon',lens:'35'};
+  const D={
+    size:{ws:['WIDE SHOT','wide establishing shot, subject small in frame, full environment visible',.55],ms:['MEDIUM','medium shot framed from the waist up',1.25],mcu:['MCU','medium close-up framed from the chest up',1.8],cu:['CLOSE-UP','close-up on the face, shallow depth of field',2.7],ecu:['EXTREME CU','extreme close-up on the eyes, macro detail',4.2]},
+    angle:{eye:['EYE LEVEL','eye-level camera, neutral and honest',0,0],low:['LOW ANGLE','low-angle camera looking up, subject feels powerful',0,-8],high:['HIGH ANGLE','high-angle camera looking down, subject feels vulnerable',0,8],dutch:['DUTCH','dutch tilt of 12 degrees, unease and tension',-12,0]},
+    move:{static:['STATIC','locked-off static tripod shot'],push:['PUSH-IN','slow dolly push-in toward the subject'],orbit:['ORBIT','smooth 90-degree orbit around the subject'],crane:['CRANE UP','crane rising up and away, revealing the space'],hand:['HANDHELD','subtle handheld movement, documentary energy']},
+    light:{moon:['5600K MOON','cool moonlight from high frame right, deep blue ambience, soft atmospheric haze','radial-gradient(55% 80% at 85% 25%,rgba(140,170,255,.7),transparent 60%),linear-gradient(200deg,#0c1430,#03050b)','#060a18'],
+           tung:['3200K','warm tungsten key from frame left, soft fill, 4:1 contrast','radial-gradient(60% 80% at 20% 40%,rgba(255,170,80,.75),transparent 60%),linear-gradient(90deg,#2a1708,#050403)','#1a0e05'],
+           rem:['REMBRANDT','Rembrandt lighting, single hard key 45 degrees high, triangle of light on the shadow cheek','radial-gradient(40% 60% at 30% 20%,rgba(255,220,170,.8),transparent 60%),linear-gradient(120deg,#1a140e,#020202)','#0d0a07'],
+           rim:['BACKLIT','strong rim light from behind, silhouette edge glow, haze in the air','radial-gradient(35% 60% at 62% 45%,rgba(255,245,225,.95),rgba(255,180,90,.35) 40%,transparent 70%),#050505','#000'],
+           neon:['NEON NOIR','neon noir — magenta and cyan practicals, wet reflections, deep shadows','radial-gradient(50% 70% at 15% 50%,rgba(255,40,140,.7),transparent 60%),radial-gradient(50% 70% at 90% 40%,rgba(30,220,230,.6),transparent 60%),#06030a','#08040c'],
+           gold:['5600K GOLD','golden hour sunlight low on the horizon, long shadows, warm lens flare','linear-gradient(180deg,#ffb35c 0%,#ff7a3a 45%,#3a1a10 75%,#120806)','#2a1206']},
+    lens:{'24':['24MM · T2.8','24mm wide lens, slight perspective stretch'],'35':['35MM · T2','35mm lens, natural perspective'],'50':['50MM · T1.8','50mm lens, true-to-eye perspective'],'85':['85MM · T1.4','85mm portrait lens, creamy bokeh, compressed background']}
+  };
+  const stage=document.getElementById('stage'),subj=document.getElementById('subj'),pt=document.getElementById('promptText');
+  function render(){
+    const sz=D.size[S.size],an=D.angle[S.angle],mv=D.move[S.move],li=D.light[S.light],le=D.lens[S.lens];
+    const lensK={'24':.85,'35':1,'50':1.12,'85':1.3}[S.lens];
+    const sc=sz[2]*lensK;
+    subj.style.transform='translateX(-50%) translateY('+an[3]+'%) scale('+sc+') rotate('+an[2]+'deg)';
+    subj.style.filter=S.light==='rim'?'drop-shadow(0 0 6px rgba(255,220,170,.9))':'none';
+    stage.style.background=li[2];subj.style.setProperty('--subj',li[3]);subj.style.setProperty('--key',{moon:'rgba(140,170,255,.45)',tung:'rgba(255,170,80,.5)',rem:'rgba(255,220,170,.45)',rim:'rgba(0,0,0,0)',neon:'rgba(255,40,140,.55)',gold:'rgba(255,160,80,.55)'}[S.light]);
+    stage.style.transform=S.angle==='dutch'?'rotate(-3deg) scale(1.1)':'none';
+    document.getElementById('m1').textContent=sz[0]+' · '+an[0];document.getElementById('m2').textContent=le[0];
+    document.getElementById('m3').textContent=mv[0];document.getElementById('m4').textContent=li[0];
+    pt.innerHTML='<span class="hl">Cinematic film still, 2.39:1 anamorphic.</span> '+sz[1]+' of the lead character, '+an[1]+'. Camera: <span class="hl">'+mv[1]+'</span>, '+le[1]+'. Lighting: <span class="hl">'+li[1]+'</span>. Consistent character from reference sheet, natural skin texture, subtle film grain, 24fps motion blur, no text, no distortion.';
+  }
+  document.querySelectorAll('.seg').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;g.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');S[g.dataset.k]=b.dataset.v;render()}));
+  render();
+
+  async function copy(text,btn,ok){try{await navigator.clipboard.writeText(text);ok()}catch(e){const r=document.createRange();r.selectNodeContents(btn);const s=getSelection();s.removeAllRanges();s.addRange(r);ok(true)}}
+  const cp=document.getElementById('copyPrompt');
+  cp.onclick=()=>copy(pt.innerText,pt,(sel)=>{cp.textContent=sel?'Selected':'Copied ✓';setTimeout(()=>cp.textContent='Copy',1600)});
+  const ce=document.getElementById('copyEmail'),note=document.getElementById('copyNote');
+  ce.onclick=()=>copy('sharmaayush2004sa@gmail.com',ce,(sel)=>{note.textContent=sel?'Email selected — press Ctrl/Cmd+C':'Email copied ✓ — talk soon.';});
+  document.getElementById('yr').textContent=new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
